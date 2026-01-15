@@ -357,7 +357,7 @@ def get_race_telemetry(session, session_type='R'):
 
         # 5b. Sort by race distance to get POSITIONS (1–20)
         # Leader = largest race distance covered
-        snapshot.sort(key=lambda r: r["dist"], reverse=True)
+        snapshot.sort(key=lambda r: (r.get("lap", 0), r["dist"]), reverse=True)
 
         leader = snapshot[0]
         leader_lap = leader["lap"]
@@ -834,6 +834,23 @@ def get_quali_telemetry(session, session_type='Q'):
         "min_speed": min_speed,
     }
 
+
+def get_race_weekends_by_year(year):
+    """Returns a list of race weekends for a given year."""
+    enable_cache()
+    schedule = fastf1.get_event_schedule(year)
+    weekends = []
+    for _, event in schedule.iterrows():
+        if event.is_testing():
+            continue
+        weekends.append({
+            "round_number": event['RoundNumber'],
+            "event_name": event['EventName'],
+            "date": str(event['EventDate'].date()),
+            "country": event['Country'],
+            "type": event['EventFormat'],
+        })
+    return weekends
 
 def list_rounds(year):
     """Lists all rounds for a given year."""
